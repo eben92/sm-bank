@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"sm-bank/internal/util"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,9 +12,9 @@ import (
 func TestCreateAccount(t *testing.T) {
 
 	arg := CreateAccountParams{
-		Owner:    "eben",
-		Currency: "USD",
-		Balance:  100,
+		Owner:    util.RandomOwner(),
+		Currency: util.RandomCurrency(),
+		Balance:  util.RandomMoney(),
 	}
 
 	a, err := testQueries.CreateAccount(context.Background(), arg)
