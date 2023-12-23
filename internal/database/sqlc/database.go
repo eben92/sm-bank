@@ -14,10 +14,12 @@ import (
 
 type Service interface {
 	Health() map[string]string
+	Api() Queries
 }
 
 type service struct {
-	db *sql.DB
+	queries *Queries
+	db      *sql.DB
 }
 
 var (
@@ -28,13 +30,16 @@ var (
 	host     = os.Getenv("DB_HOST")
 )
 
-func New() Service {
+func NewService() Service {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := &service{db: db}
+
+	q := New(db)
+	s := &service{db: db, queries: q}
+
 	return s
 }
 
@@ -50,4 +55,10 @@ func (s *service) Health() map[string]string {
 	return map[string]string{
 		"message": "It's healthy",
 	}
+}
+
+func (s *service) Api() Queries {
+	q := *s.queries
+
+	return q
 }

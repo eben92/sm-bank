@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	database "sm-bank/internal/database/sqlc"
+
 	_ "github.com/joho/godotenv/autoload"
-	"sm-bank/internal/database"
 )
 
 type Server struct {
@@ -20,7 +21,7 @@ func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	NewServer := &Server{
 		port: port,
-		db:   database.New(),
+		db:   database.NewService(),
 	}
 
 	// Declare Server config

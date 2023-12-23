@@ -33,11 +33,27 @@ docker-down:
 test:
 	@echo "Testing..."
 	@go test ./tests -v
+	
 
 # Clean the binary
 clean:
 	@echo "Cleaning..."
 	@rm -f main
+
+sqlc: 
+	@echo "Generating..."
+	@sqlc generate
+	@echo "Generated!"
+
+migrateup:
+	@echo "Migrating..."
+	@migrate -path ./internal/database/migration -database "postgresql://postgres:postgres@localhost:5432/bank?sslmode=disable" -verbose up
+	@echo "Migration complete!"
+
+migratedown:
+	@echo "Rolling back..."
+	@migrate -path ./internal/database/migration -database "postgresql://postgres:postgres@localhost:5432/bank?sslmode=disable" -verbose down
+	@echo "Rollback complete!"
 
 # Live Reload
 watch:
@@ -57,3 +73,15 @@ watch:
 	fi
 
 .PHONY: all build run test clean
+
+
+# docker db stuff
+createdb:
+	@echo "Creating database..."
+	@docker exec -it postgres psql -U postgres postgres -c "CREATE DATABASE bank;"
+	@echo "Database created!"
+
+dropdb:
+	@echo "Dropping database..."
+	@docker exec -it postgres psql -U postgres postgres -c "DROP DATABASE bank;"
+	@echo "Database dropped!"	

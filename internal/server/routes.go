@@ -1,8 +1,10 @@
 package server
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -21,5 +23,15 @@ func (s *Server) HelloWorldHandler(c *gin.Context) {
 }
 
 func (s *Server) healthHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, s.db.Health())
+	q := s.db.Api()
+	a, err := q.GetAccount(context.Background(), 1)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "It's healthy",
+		"account": a,
+	})
 }
