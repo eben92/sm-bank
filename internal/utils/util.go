@@ -1,4 +1,4 @@
-package util
+package utils
 
 import (
 	"math/rand"
@@ -44,4 +44,8 @@ func RandomCurrency() string {
 	n := len(currencies)
 
 	return currencies[rand.Intn(n)]
+}
+
+func ConvertInt32To64(i int32) int64 {
+	return int64(i)
 }

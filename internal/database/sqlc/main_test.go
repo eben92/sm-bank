@@ -11,15 +11,17 @@ import (
 )
 
 var testQueries *Queries
+var testDB *sql.DB
 
 func TestMain(m *testing.M) {
+	var err error
 	connStr := "postgres://postgres:postgres@localhost:5432/bank?sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+	testDB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	testQueries = New(db)
+	testQueries = New(testDB)
 
 	os.Exit(m.Run())
 }

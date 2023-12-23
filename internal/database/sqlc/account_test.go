@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
-	"sm-bank/internal/util"
+	"sm-bank/internal/utils"
 	"testing"
 	"time"
 
@@ -12,9 +12,9 @@ import (
 
 func createRandomAccount(t *testing.T) Account {
 	arg := CreateAccountParams{
-		Owner:    util.RandomOwner(),
-		Currency: util.RandomCurrency(),
-		Balance:  util.RandomMoney(),
+		Owner:    utils.RandomOwner(),
+		Currency: utils.RandomCurrency(),
+		Balance:  utils.RandomMoney(),
 	}
 
 	a, err := testQueries.CreateAccount(context.Background(), arg)
@@ -54,7 +54,7 @@ func TestUpdateAccount(t *testing.T) {
 
 	arg := UpdateAccountParams{
 		ID:      acc1.ID,
-		Balance: util.RandomMoney(),
+		Balance: utils.RandomMoney(),
 	}
 
 	acc2, err := testQueries.UpdateAccount(context.Background(), arg)
