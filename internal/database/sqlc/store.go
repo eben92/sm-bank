@@ -12,6 +12,8 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+var txKey = struct{}{}
+
 type Service interface {
 	Health() map[string]string
 	Api() Queries
@@ -82,6 +84,11 @@ func (s *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferT
 	var result TransferTxResult
 	err := s.execTx(ctx, func(q *Queries) error {
 		var err error
+
+		txName := ctx.Value(txKey)
+
+		fmt.Println(txName, "create transfer")
+
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
 			ToAccountID:   arg.ToAccountID,
@@ -91,6 +98,7 @@ func (s *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferT
 			return err
 		}
 
+		fmt.Println(txName, "create entry 1")
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountID,
 			Amount:    -arg.Amount,
@@ -99,6 +107,7 @@ func (s *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferT
 			return err
 		}
 
+		fmt.Println(txName, "create entry 2")
 		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,
@@ -107,27 +116,19 @@ func (s *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferT
 			return err
 		}
 
-		account1, err := q.GetAccount(ctx, int32(arg.FromAccountID))
-		if err != nil {
-			return err
-		}
-
-		result.FromAccount, err = q.UpdateAccount(context.Background(), UpdateAccountParams{
-			ID:      int32(arg.FromAccountID),
-			Balance: account1.Balance - arg.Amount,
+		fmt.Println(txName, "update account 1")
+		result.FromAccount, err = q.AddAccountBalance(context.Background(), AddAccountBalanceParams{
+			ID:     int32(arg.FromAccountID),
+			Amount: -arg.Amount,
 		})
 		if err != nil {
 			return err
 		}
 
-		account2, err := q.GetAccount(ctx, int32(arg.ToAccountID))
-		if err != nil {
-			return err
-		}
-
-		result.ToAccount, err = q.UpdateAccount(context.Background(), UpdateAccountParams{
-			ID:      int32(arg.ToAccountID),
-			Balance: account2.Balance + arg.Amount,
+		fmt.Println(txName, "update account 2")
+		result.ToAccount, err = q.AddAccountBalance(context.Background(), AddAccountBalanceParams{
+			ID:     int32(arg.ToAccountID),
+			Amount: arg.Amount,
 		})
 		if err != nil {
 			return err
