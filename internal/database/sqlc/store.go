@@ -116,28 +116,43 @@ func (s *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferT
 			return err
 		}
 
-		fmt.Println(txName, "update account 1")
-		result.FromAccount, err = q.AddAccountBalance(context.Background(), AddAccountBalanceParams{
-			ID:     int32(arg.FromAccountID),
-			Amount: -arg.Amount,
-		})
-		if err != nil {
-			return err
-		}
+		if arg.FromAccountID < arg.ToAccountID {
+			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount, txName)
+			if err != nil {
+				return err
+			}
+		} else {
 
-		fmt.Println(txName, "update account 2")
-		result.ToAccount, err = q.AddAccountBalance(context.Background(), AddAccountBalanceParams{
-			ID:     int32(arg.ToAccountID),
-			Amount: arg.Amount,
-		})
-		if err != nil {
-			return err
+			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount, txName)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
 	})
 
 	return result, err
+}
+
+func addMoney(ctx context.Context, q *Queries, accountID1 int64, amount1 int64, accountID2 int64, amount2 int64, txName any) (account1, account2 Account, err error) {
+	fmt.Println(txName, "update account 1")
+	account1, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     int32(accountID1),
+		Amount: amount1,
+	})
+	if err != nil {
+		return
+	}
+
+	fmt.Println(txName, "update account 2")
+	account2, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     int32(accountID2),
+		Amount: amount2,
+	})
+
+	return
+
 }
 
 func NewService() Service {
