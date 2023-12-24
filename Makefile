@@ -56,6 +56,11 @@ migratedown:
 	@migrate -path ./internal/database/migration -database "postgresql://postgres:postgres@localhost:5432/bank?sslmode=disable" -verbose down
 	@echo "Rollback complete!"
 
+psql:
+	@echo "Connecting to DB..."
+	@docker exec -it postgres psql -U postgres -d bank
+
+
 # Live Reload
 watch:
 	@if command -v air > /dev/null; then \
